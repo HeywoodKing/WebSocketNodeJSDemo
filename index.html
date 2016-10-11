@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="format-detection" content="email=no"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0" name="viewport">
+    <title>NodeJS多人在线网络通讯平台</title>
+    <link rel="stylesheet" type="text/css" href="./css/style.css"/>
+    <link rel="stylesheet" type="text/css" href="./css/bootstrap-3.3.4.min.css"/>
+    <style type="text/css" media="screen">
+	
+    </style>
+    <!--[if lt IE 8]><script src="./js/json3.min.js"></script><![endif]-->
+    <script type="text/javascript" src="./js/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="./js/jquery.nicescroll.min.js"></script>
+    <script src="./node_modules/socket.io/node_modules/socket.io-client/socket.io.js"></script> 
+    <script type="text/javascript" src="./js/client-jquery.js"></script>   
+</head>
+<body>
+	<header id="header" class="header">
+		<div style="background:#3d3d3d;height: 28px; width: 100%;font-size:12px;">
+            <div style="line-height: 28px;color:#fff;">
+                <span style="text-align:left;margin-left:10px;">NodeJS多人在线网络通讯平台</span>
+                <span style="float:right; margin-right:10px;">
+                	<span id="showusername"></span>
+                	<!-- |  -->
+					<!-- <span id="logout" style="color:#fff;cursor:pointer;">退出</span> -->
+				</span>
+            </div>
+        </div>
+	</header><!-- /header -->
+
+	<nav></nav>
+
+	<aside>
+		<div>
+	        <form class="form-inline">
+			  	<div class="form-group">
+				    <label class="sr-only" for="exampleInputAmount"></label>
+				    <div class="input-group">
+				      	<div class="input-group-addon">您的昵称</div>
+				      	<input id="nickname" name="nickname" type="text" class="form-control" id="exampleInputAmount" placeholder="请输入您的昵称" value="">
+				      	<!-- <div id="btnEnter" class="input-group-addon">进入</div> -->
+				      	<span class="input-group-btn">
+				      		<button id="btnReplace" class="btn btn-default" type="button">
+				      			<span style="color:orange;" class="glyphicon glyphicon-refresh"></span>
+				      		</button>
+				      	</span>
+				    </div>
+			  	</div>
+			</form>
+	        <div id="usercount" class="list-group-item list-group-item-success" style="cursor:pointer;">
+	        	<span id="nowuserscount" class="badge" style="background-color:green;"></span>
+	        	<span style="margin-right:5px;" class="glyphicon glyphicon-comment"></span>
+	        	<b>当前在线人数</b>
+	        </div>
+		    <div id="userlistbox">
+		    	<ul id="userlistul" class="user-list-box list-group">
+		    	</ul>
+
+				<!-- <div class="list-group">
+					<a href="#" class="list-group-item active">Cras justo odio</a>
+					<a href="#" class="list-group-item">Dapibus ac facilisis in</a>
+					<a href="#" class="list-group-item">Morbi leo risus</a>
+					<a href="#" class="list-group-item">Porta ac consectetur ac</a>
+					<a href="#" class="list-group-item">Vestibulum at eros</a>
+				</div> -->
+		    </div>
+	    </div>
+	</aside>
+
+	<article>
+		<section>
+	        <div class="panel panel-default">
+			  	<div class="panel-heading">
+			    	<h3 class="panel-title">NodeJS网络通讯</h3>
+			  	</div>
+				<div id="notice" style="float:left;display:none;background:#EFEFF4; font-size:12px; margin: 0;padding:8px; width:100%; height:35px; color:#666;"></div>	
+				<!-- panel-body -->
+			  	<div class="">
+			        <div id="message" class="message">
+			        </div>
+			        <div id="privateMessage" class="private-message"></div>
+			  	</div>
+			  	<div class="panel-footer">
+			  		<div class="input-box">
+	                    <div class="action">
+	                    	<div class="pull-left">快捷方式</div>
+	                        <div class="pull-right">
+	                        	<button type="button" id="btnSend" class="btn btn-primary">我要说几句</button>
+	                        </div>
+	                    	<div class="clear"></div>
+	                    </div>
+	                    <div class="input">
+							<textarea id="content" name="content" placeholder="请输入聊天内容，按Enter提交，可以点击左侧的用户私聊哦！" class="message-content" maxlength="500"></textarea>
+	                    </div>
+	                </div>
+			  	</div>
+			</div>
+		</section>
+	</article>
+
+	<!-- <div class="pull-left" style="width: 230px; padding: 10px 20px;">
+    	1、假设是一个在线客服系统，里面有许多的公司使用你的服务，每个公司自己的用户可以通过一个专属URL地址进入该公司的聊天室，聊天是一对一的，每个公司可以新建多个客服人员，每个客服人员可以同时和客户端的多个用户聊天。
+		2、又假设是一个在线WebIM系统，实现类似微信，qq的功能，客户端可以看到好友在线状态，在线列表，添加好友，删除好友，新建群组等，消息的发送除了支持基本的文字外，还能支持表情、图片和文件。
+    </div> -->
+
+	<footer></footer>    
+
+    <div id="winMessage" class="win-message">
+    	<div id="winHeader" class="win-header">
+    		<div id="winTitle" class="win-title">
+    			<span>小二快接单咯</span>
+    			<span class="badge" style="margin:0 10px; font-size:15px;background-color:#fff;color:#f00;">5</span>
+    		</div>
+
+	    	<div id="closeGroup" class="win-close-group">
+	    		<!-- <div class="win-close" style="">关闭</div> -->
+	    		<span class="win-minbox">-</span>
+	    	</div>
+    	</div>
+    	<div id="winContent" class="win-content">
+    		<!-- <iframe id="messageIframe" class="win-iframe" src="message.html" width="342" height="272" align="center,center" vspace="0" hspace="0" marginwidth="0" marginheight="0" scrolling="no" frameborder="0" style="" allowtransparency="true"></iframe> -->
+	    	<div class="panel-body order-list">
+	    		<div class="item">
+		    		<div><b><span>农夫山泉(500ml)</span></b> &nbsp;&nbsp;<span><b>2</b> 瓶</span></div>
+		    		<div><b><span>香辣味豆干</span></b> &nbsp;&nbsp;<span><b>5</b> 个</span></div>
+		    		<div><b><span>芙蓉王硬蓝</span></b> &nbsp;&nbsp;<span><b>1</b> 包</span></div>
+		    		<div>说明：客户有 <b>10.00</b> 元整钱，需找零 <b>7.00</b> 元</div>
+		    		<div>备注：豆干要香辣味</div>
+		    		<div class="item-machine">
+		    			55<sup>#</sup>
+		    		</div>
+			    	<div class="item-footer">
+			    		<div class="item-money">
+			    			<em>￥</em>
+			    			<span>3.00</span>
+			    		</div>
+			    		<div class="item-confirm-order btn-group">
+				    		<button id="btnOrder" type="button" class="btn btn-primary">马上接单</button>
+				    		<button id="btnCancel" type="button" class="btn btn-danger">无货取消</button>
+			    		</div>
+			    		<div class="clearfix"></div>
+			    	</div>
+		    	</div>
+	    	
+	    		<div class="item">
+		    		<div><b><span>冰红茶(500ml)</span></b> &nbsp;&nbsp;<span><b>2</b> 瓶</span></div>
+		    		<div><b><span>豆沙包</span></b> &nbsp;&nbsp;<span><b>5</b> 个</span></div>
+		    		<div>说明：客户有 <b>40.00</b> 元整钱，需找零 <b>7.46</b> 元</div>
+		    		<div>备注：豆干要香辣味</div>
+		    		<div class="item-machine">
+		    			23<sup>#</sup>
+		    		</div>
+			    	<div class="item-footer">
+			    		<div class="item-money">
+			    			<em>￥</em>
+			    			<span>32.54</span>
+			    		</div>
+			    		<div class="item-confirm-order btn-group">
+				    		<button id="btnOrder" type="button" class="btn btn-primary">马上接单</button>
+				    		<button id="btnCancel" type="button" class="btn btn-danger">无货取消</button>
+			    		</div>
+			    		<div class="clearfix"></div>
+			    	</div>
+		    	</div>
+
+		    	<div class="item">
+		    		<div><b><span>冰红茶(500ml)</span></b> &nbsp;&nbsp;<span><b>2</b> 瓶</span></div>
+		    		<div><b><span>豆沙包</span></b> &nbsp;&nbsp;<span><b>5</b> 个</span></div>
+		    		<div>说明：客户有 <b>15.00</b> 元整钱，需找零 <b>3.27</b> 元</div>
+		    		<div>备注：豆干要香辣味</div>
+		    		<div class="item-machine">
+		    			155<sup>#</sup>
+		    		</div>
+			    	<div class="item-footer">
+			    		<div class="item-money">
+			    			<em>￥</em>
+			    			<span>11.73</span>
+			    		</div>
+			    		<div class="item-confirm-order btn-group">
+				    		<button id="btnOrder" type="button" class="btn btn-primary">马上接单</button>
+				    		<button id="btnCancel" type="button" class="btn btn-danger">无货取消</button>
+			    		</div>
+			    		<div class="clearfix"></div>
+			    	</div>
+		    	</div>
+	    	</div>
+    	</div>
+    </div>
+
+    <script type="text/javascript">
+    //var s = "网页可见区域宽 ："+ document.body.clientWidth; 
+		// s += "\r\n网页可见区域高："+ document.body.clientHeight;  
+		// s += "\r\n网页可见区域宽："+ document.body.offsetWidth +" (包括边线的宽)"; 
+		// s += "\r\n网页可见区域高："+ document.body.offsetHeight +" (包括边线的高)"; 
+		// s += "\r\n网页正文全文宽："+ document.body.scrollWidth; 
+		// s += "\r\n网页正文全文高："+ document.body.scrollHeight; 
+		// s += "\r\n网页被卷去的高："+ document.body.scrollTop; 
+		// s += "\r\n网页被卷去的左："+ document.body.scrollLeft; 
+		// s += "\r\n网页正文部分上："+ window.screenTop; 
+		// s += "\r\n网页正文部分左："+ window.screenLeft; 
+		// s += "\r\n屏幕分辨率的高："+ window.screen.height; 
+		// s += "\r\n屏幕分辨率的宽："+ window.screen.width; 
+		// s += "\r\n屏幕可用工作区高度："+ window.screen.availHeight; 
+		// s += "\r\n屏幕可用工作区宽度："+ window.screen.availWidth; 
+	// alert(s); 
+
+    var winWidth = 300;
+    var winHeight = 250;
+    var winTop = window.screen.availHeight - winHeight;
+    var winLeft = window.screen.availWidth - winWidth;
+    // alert(winTop + "," + winLeft);
+	function openWin(){
+		// var userAgent = navigator.userAgent.toLowerCase();
+		// var isFireFox=/mozilla/.test(userAgent) && !/(compatible|webkit)/.test(userAgent);
+		// if(isFireFox){
+		//     window.showModelessDialog = function (url){
+		//         var windowName = (arguments[1] == null ? "" : arguments[1].toString());
+		//         var feature = (arguments[2] == null ? "" : arguments[2].toString());
+		//         var OpenedWindow = window.open(url, windowName, feature);
+		//         window.addEventListener('click', function (){ OpenedWindow.focus(); }, false);
+		//         return OpenedWindow;
+		//     }
+		// }else{
+		//     //子窗口中调用父窗口
+		//     //IE中用window.parent.document
+		//     //FF中用window.opener.document
+		//     //下面的代码将 作用于IE '重载' window.showModelessDialog 方法 统一用 window.opener访问父窗口
+		//     var originFn = window.showModelessDialog;
+		//     window.showModelessDialog = function (url){
+		//         var OpenedWindow = originFn(url, arguments[1], arguments[2]);
+		//         OpenedWindow.opener = window;
+		//         return OpenedWindow;
+		//     }
+		// }
+
+		return window.open('message.html','_blank','height=' + winHeight + ', width=' + winWidth + ', top=' + winTop + ', left=' + winLeft + ', toolbar=no, menubar=no, scrollbars=no, resizable=no, location=no, status=no, alwaysLowered=no, alwaysRaised=yes, depended=yes, z-look=yes, directories=no',false);
+		// return window.showModelessDialog('message.html','','dialogWidth:'+winWidth+';dialogHeight:'+winHeight+';scroll:no;status:no;center:yes;edge:raised;unadorned:yes;');
+	}
+
+	function popWin(){
+	    // var OpenedWindow = window.showModelessDialog('popWindow2.html','','width=400,height=400');
+	    // return window.showModelessDialog('message.html','','dialogWidth:'+winWidth+';dialogHeight:'+winHeight+';scroll:no;status:no;center:yes;edge:raised;unadorned:yes;');
+	    return openWin();
+	}
+
+	$(function(){
+
+		JSocket.userEnter();
+		
+		// 关闭右下角的消息弹出框
+		$("#closeGroup").on('click', function(){
+			// $('#winMessage').fadeOut(200);
+			$("#winMessage").removeClass("win-message").addClass("win-message-fixed");
+			// $("#winMessage").slideUp(1000, function(){
+			// 	$(this).css({
+			// 		"height": "40px",
+			// 		"display": "block"
+			// 	});
+			// });
+		});
+
+		$("#winTitle").on("click", function(){
+			// $("#winMessage").slideDown(800, function(){
+			// 	$("#winMessage").removeClass("win-message-fixed").addClass("win-message");
+			// 	// $(this).css("height", "350px");
+			// });
+
+			$("#winMessage").removeClass("win-message-fixed").addClass("win-message");
+		});
+
+		$("#btnOrder").on('click', function(){
+			alert("我已接单，马上配送！");
+		});
+
+		$("#btnCancel").on('click', function(){
+			alert("取消订单！");
+		});
+
+
+
+		$("#btnReplace").on('click', function(){
+			JSocket.replaceNickname();
+		});
+
+		//通过“回车”提交用户名
+		$("#nickname").on('keydown', function(e) {
+			e = e || event;
+			if (e.keyCode === 13) {
+				JSocket.userEnter();
+			}
+		});
+
+		// 发送聊天消息
+		$("#btnSend").on('click',function(){
+			if(JSocket.isPrivateObj){
+				JSocket.sendPrivateMessage();
+				UserData.sendMessage(obj);
+			}else{
+				JSocket.sendMessage();
+			}
+		});
+
+		//通过“回车”提交信息
+		$("#content").on('keydown', function(e) {
+			e = e || event;
+			if (e.keyCode === 13) {
+				if(JSocket.isPrivateObj){
+					JSocket.sendPrivateMessage();
+				}else{
+					JSocket.sendMessage();
+				}
+			}
+		});
+
+		// 退出
+		$("#logout").on('click', function(){
+			JSocket.logout();
+		});
+
+		// 回到聊天大厅
+		$("#usercount").on('click', function(){
+			$("#privateMessage").hide();
+			$("#message").show();
+			$("#userlistul").find("li").removeClass("active");
+			// $(this).addClass("active");
+			JSocket.isPrivateObj = false;
+		});
+
+		//点击用户私聊
+		$("#userlistul").on('click', 'li', function(){
+			if(JSocket.userid != $(this).attr('data')){
+				$(this).parent().children().each(function(){
+					$(this).removeClass("active");
+				});
+				JSocket.sendTo = $(this).attr('data');
+				JSocket.isPrivateObj = true;
+				$("#message").hide();
+				$("#privateMessage").show();
+				$(this).addClass("active");
+			}else{
+				// $("#notice").html('您喝多了，喝多了就会自言自语！').fadeIn(1000).fadeOut(2000);
+			}
+		});
+
+		$(".order-list").niceScroll({
+			cursorcolor: "#E62020", 
+			cursoropacitymax: 0.5, 
+			touchbehavior: false, 
+			cursorwidth: "3px", 
+			cursorborder: "5px", 
+			cursorborderradius: "5px",
+			scrollspeed: 60
+		});
+
+	});
+    </script>
+</body>
+</html>
